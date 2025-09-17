@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
 # dependencies
@@ -35,3 +36,7 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+=======
+main.py
+*.txt
+>>>>>>> 35ec3f6647c29c5bd9174611747d9f0ea9903e02

@@ -193,9 +193,9 @@ export default function HomeScreen({ navigation }: any) {
   const getCategoryIcon = (category: MerchantCategory) => {
     const iconMap: { [key in MerchantCategory]: string } = {
       [MerchantCategory.COFFEE]: 'coffee',
-      [MerchantCategory.RESTAURANT]: 'utensils',
-      [MerchantCategory.CONVENIENCE]: 'shopping-bag',
-      [MerchantCategory.FAST_FOOD]: 'fast-forward',
+      [MerchantCategory.RESTAURANT]: 'shopping-bag', // 使用 shopping-bag 替代
+      [MerchantCategory.CONVENIENCE]: 'package',
+      [MerchantCategory.FAST_FOOD]: 'zap',
       [MerchantCategory.SHOPPING]: 'shopping-cart',
       [MerchantCategory.NIGHT_MARKET]: 'star',
       [MerchantCategory.OTHER]: 'map-pin',

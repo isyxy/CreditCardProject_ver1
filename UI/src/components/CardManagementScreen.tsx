@@ -1,5 +1,5 @@
 // src/components/CardManagementScreen.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -12,13 +12,11 @@ import {
   Alert,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCards } from '../context/CardContext';
 import { availableCreditCards, type AvailableCreditCard } from '../data/creditCards';
 import { CreditCard } from '../types';
 import BottomNav from './BottomNav';
 
-// 銀行標籤資料，用於篩選功能
 const bankTags = [
   { key: '全部', label: '全部' },
   { key: '中國信託', label: '中國信託', icon: require('../../assets/banks/中信LOGO.png') },
@@ -30,20 +28,11 @@ const bankTags = [
   { key: '匯豐銀行', label: '匯豐銀行', icon: require('../../assets/banks/匯豐LOGO.png') },
 ];
 
-// 定義已啟用卡片的儲存 Key
-const ACTIVE_CARDS_KEY = 'activeCards';
-
 export default function CardManagementScreen({ navigation }: any) {
   const { cards, addCard, removeCard, toggleCard } = useCards();
   const [searchText, setSearchText] = useState('');
   const [selectedBank, setSelectedBank] = useState('全部');
 
-  // 當卡片狀態改變時，自動儲存已啟用的卡片到檔案
-  useEffect(() => {
-    saveActiveCardsToFile();
-  }, [cards]); // 監聽 cards 的變化
-
-  // 根據銀行和搜尋文字過濾可用的信用卡清單
   const filteredCards = availableCreditCards.filter((card) => {
     const matchBank = selectedBank === '全部' || card.bankName === selectedBank;
     const matchSearch =
@@ -53,17 +42,14 @@ export default function CardManagementScreen({ navigation }: any) {
     return matchBank && matchSearch;
   });
 
-  // 檢查特定卡片是否已被使用者新增
   const isCardAdded = (cardName: string, bankName: string) => {
     return cards.some((c) => c.cardName === cardName && c.bankName === bankName);
   };
 
-  // 取得使用者已新增的特定卡片資料
   const getAddedCard = (cardName: string, bankName: string) => {
     return cards.find((c) => c.cardName === cardName && c.bankName === bankName);
   };
 
-  // 處理新增卡片的功能
   const handleAddCard = (card: AvailableCreditCard) => {
     const newCard: CreditCard = {
       ...card,
@@ -74,7 +60,6 @@ export default function CardManagementScreen({ navigation }: any) {
     Alert.alert('成功', `已新增 ${card.bankName} ${card.cardName}`);
   };
 
-  // 處理移除卡片的功能
   const handleRemoveCard = (cardId: string, cardName: string) => {
     Alert.alert('確認移除', `確定要移除 ${cardName} 嗎?`, [
       { text: '取消', style: 'cancel' },
@@ -86,12 +71,10 @@ export default function CardManagementScreen({ navigation }: any) {
     ]);
   };
 
-  // 處理切換卡片啟用/停用狀態
   const handleToggleCard = (cardId: string) => {
     toggleCard(cardId);
   };
 
-  // 取得卡片回饋摘要（顯示前三高的回饋類別）
   const getCashbackSummary = (cashback: { [key: string]: number }) => {
     const entries = Object.entries(cashback);
     if (entries.length === 0) return '無回饋資訊';
@@ -105,73 +88,17 @@ export default function CardManagementScreen({ navigation }: any) {
     return topThree;
   };
 
-  // ✨ 核心功能：將已啟用的卡片自動儲存到 AsyncStorage
-  const saveActiveCardsToFile = async () => {
-    try {
-      // 篩選出已啟用的卡片
-      const activeCards = cards.filter((card) => card.isActive);
-
-      // 準備要儲存的資料結構
-      const dataToSave = {
-        lastUpdated: new Date().toISOString(), // 最後更新時間
-        totalCount: activeCards.length, // 已啟用卡片總數
-        cards: activeCards.map((card) => ({
-          id: card.id,
-          bankName: card.bankName,
-          cardName: card.cardName,
-          cashback: card.cashback,
-          isActive: card.isActive,
-        })),
-      };
-
-      // 將資料轉換為 JSON 字串並儲存
-      await AsyncStorage.setItem(ACTIVE_CARDS_KEY, JSON.stringify(dataToSave));
-
-      console.log('✅ 已啟用卡片已自動儲存');
-      console.log('📊 儲存卡片數量:', activeCards.length);
-    } catch (error) {
-      console.error('❌ 儲存已啟用卡片失敗:', error);
-    }
-  };
-
-  // ✨ 讀取已儲存的已啟用卡片（可用於傳送到後端）
-  const loadActiveCardsFromFile = async () => {
-    try {
-      // 從 AsyncStorage 讀取資料
-      const jsonString = await AsyncStorage.getItem(ACTIVE_CARDS_KEY);
-      
-      if (!jsonString) {
-        console.log('⚠️ 尚未儲存已啟用卡片資料');
-        return null;
-      }
-
-      // 解析 JSON
-      const data = JSON.parse(jsonString);
-      console.log('✅ 成功讀取已啟用卡片:', data);
-      
-      return data;
-    } catch (error) {
-      console.error('❌ 讀取已啟用卡片失敗:', error);
-      return null;
-    }
-  };
-
-
-
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F8FA' }}>
       <View style={styles.container}>
-        {/* 頂部標題列 */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
             <Feather name="arrow-left" size={24} color="#222" />
           </TouchableOpacity>
           <Text style={styles.title}>管理信用卡</Text>
-          {/* 佔位元素，用於對齊標題置中 */}
           <View style={styles.backBtn} />
         </View>
 
-        {/* 統計資訊欄位 */}
         <View style={styles.statsBar}>
           <View style={styles.statItem}>
             <Text style={styles.statNumber}>{cards.length}</Text>
@@ -184,7 +111,6 @@ export default function CardManagementScreen({ navigation }: any) {
           </View>
         </View>
 
-        {/* 搜尋列 */}
         <View style={styles.searchBarRow}>
           <View style={styles.searchBar}>
             <Feather name="search" size={20} color="#888" />
@@ -207,7 +133,6 @@ export default function CardManagementScreen({ navigation }: any) {
           </View>
         </View>
 
-        {/* 銀行標籤橫向滾動列 */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -229,7 +154,6 @@ export default function CardManagementScreen({ navigation }: any) {
           ))}
         </ScrollView>
 
-        {/* 卡片清單 */}
         <ScrollView style={styles.list} contentContainerStyle={{ paddingBottom: 80 }}>
           <Text style={styles.sectionTitle}>可用卡片 ({filteredCards.length})</Text>
 

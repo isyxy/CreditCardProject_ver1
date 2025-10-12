@@ -28,11 +28,12 @@
     },
     "plugins": [
       [
-        "expo-image-picker",
+        "expo-location",
         {
-          "photosPermission": "The app accesses your photos to let you share them with your friends."
+          "locationAlwaysAndWhenInUsePermission": "允許 $(PRODUCT_NAME) 存取您的位置以搜尋附近商家"
         }
       ]
     ]
   }
 }
+

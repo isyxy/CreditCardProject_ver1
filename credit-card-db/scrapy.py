@@ -107,6 +107,45 @@ def scrape_esun_unicard():
     url = "https://www.esunbank.com/zh-tw/personal/credit-card/intro/bank-card/unicard"
     return scrape_card_data(url, "U Bear卡", wait_time=8)
 
+def scrape_esun_unicard_top100():
+    """玉山銀行 - U Bear卡百大店家"""
+    url = "https://event.esunbank.com.tw/credit/unicard/discount-channel.html"
+    driver = setup_driver()
+    try:
+        print(f"🔍 正在爬取: U Bear卡百大店家")
+        driver.get(url)
+        time.sleep(8)
+        
+        soup = BeautifulSoup(driver.page_source, "html.parser")
+        
+        # 移除不需要的元素
+        for tag in soup(["script", "style", "noscript", "nav", "footer", "header"]):
+            tag.decompose()
+        
+        # 獲取文字內容
+        all_text = soup.get_text(separator="\n", strip=True)
+        
+        # 清理文字
+        all_lines = ["\n========== U Bear卡百大店家優惠 ==========\n"]
+        for line in all_text.split('\n'):
+            line = line.strip()
+            if line and len(line) > 1 and not line.isspace():
+                all_lines.append(line)
+        
+        all_lines.append("\n========== 百大店家資料結束 ==========\n")
+        
+        if len(all_lines) <= 2:
+            all_lines.append(f"⚠️ 無法擷取百大店家內容: {url}")
+        
+        print(f"✅ 成功爬取 U Bear卡百大店家: {len(all_lines)} 行內容")
+        return all_lines
+        
+    except Exception as e:
+        print(f"❌ 爬取失敗 U Bear卡百大店家: {e}")
+        return [f"錯誤: 無法爬取 U Bear卡百大店家", f"網址: {url}", f"錯誤訊息: {str(e)}"]
+    finally:
+        driver.quit()
+
 def scrape_esun_kumamon_card():
     """玉山銀行 - 熊本熊信用卡"""
     url = "https://www.esunbank.com/zh-tw/personal/credit-card/intro/bank-card/kumamon_card"
@@ -115,11 +154,6 @@ def scrape_esun_kumamon_card():
 # =============================================================================
 # 國泰世華銀行信用卡函數
 # =============================================================================
-
-# def scrape_cathay_cards_activity():
-#     """國泰世華銀行 - 信用卡總覽"""
-#     url = "https://www.cathay-cube.com.tw/cathaybk/personal/product/credit-card/cards/cube-l"
-#     return scrape_card_data(url, "cube信用卡權益", wait_time=10)
 
 def scrape_cathay_cube_card():
     """國泰世華銀行 - CUBE卡"""
@@ -223,32 +257,6 @@ def goodbird_to_txt_data():
         all_lines.append("⚠️ 無法擷取內容，請檢查頁面結構")     
     
     return (credit_card_name, all_lines)
-def goodbird_to_txt_data():
-    """獲取吉鶴卡資料，返回資料而不儲存"""
-    url = "https://card.ubot.com.tw/CardDetail/cardDetail202"          
-    
-    driver = webdriver.Chrome()     
-    driver.get(url)     
-    time.sleep(5)     
-    soup = BeautifulSoup(driver.page_source, "html.parser")     
-    driver.quit()           
-    
-    for script in soup(["script", "style", "noscript"]):         
-        script.decompose()          
-    
-    all_text = soup.get_text(separator="\n", strip=True)     
-    credit_card_name = "吉鶴卡"     
-    
-    all_lines = []     
-    for line in all_text.split('\n'):         
-        line = line.strip()         
-        if line:             
-            all_lines.append(line)          
-    
-    if not all_lines:         
-        all_lines.append("⚠️ 無法擷取內容，請檢查頁面結構")     
-    
-    return (credit_card_name, all_lines)
 
 def save_both_cards_to_txt(filename="聯邦銀行.txt"):
     """合併兩張卡片資料並儲存到同一個檔案"""
@@ -266,7 +274,6 @@ def save_both_cards_to_txt(filename="聯邦銀行.txt"):
     # 一次性儲存
     save_bank_file("聯邦銀行", cards_data, filename)
     print(f"🎉 兩張卡片資料已合併儲存到 {filename}")
-
 
 
 def scrape_taishin_bank():
@@ -301,9 +308,19 @@ def scrape_hsbc_bank():
 def scrape_esun_bank():
     """爬取玉山銀行所有信用卡"""
     print(f"\n🏦 開始處理玉山銀行...")
+    
+    # 先爬取 U Bear 卡基本資料
+    unicard_data = scrape_esun_unicard()
+    
+    # 再爬取百大店家資料
+    top100_data = scrape_esun_unicard_top100()
+    
+    # 合併 U Bear 卡的兩部分資料
+    combined_unicard_data = unicard_data + top100_data
+    
     cards_data = [
         ("Pi錢包信用卡", scrape_esun_pi_card()),
-        ("U Bear卡", scrape_esun_unicard()),
+        ("U Bear卡(含百大店家)", combined_unicard_data),
         ("熊本熊信用卡", scrape_esun_kumamon_card())
     ]
     save_bank_file("玉山銀行", cards_data, "玉山銀行.txt")
@@ -314,7 +331,6 @@ def scrape_cathay_bank():
     print(f"\n🏦 開始處理國泰世華銀行...")
     cards_data = [
         ("CUBE卡", scrape_cathay_cube_card()),
-        # ("權益", scrape_cathay_cards_activity())     
     ]
     save_bank_file("國泰世華銀行", cards_data, "國泰世華銀行.txt")
     url = "https://www.cathay-cube.com.tw/cathaybk/personal/product/credit-card/cards/cube-list"
@@ -398,15 +414,9 @@ def scrape_all_banks():
     scrape_cathay_bank()
     time.sleep(3)
 
-    #聯邦的兩張
+    # 聯邦的兩張
     save_both_cards_to_txt()
     time.sleep(3)
-    # lineBank_to_txt()
-    # time.sleep(3)
-
-    # goodbird_to_txt()
-    # time.sleep(3)
-    
 
     end_time = time.time()
     total_time = int(end_time - start_time)
@@ -419,15 +429,6 @@ def scrape_all_banks():
 if __name__ == "__main__":
     # 爬取所有銀行
     scrape_all_banks()
-    # lineBank_to_txt()
-    # goodbird_to_txt()
-    # lineBank_to_txt()
-    # scrape_cathay_bank()
+    
     # 或者只爬取特定銀行
-    # scrape_ubot_bank()      # 只爬聯邦銀行
-    # scrape_hsbc_bank()      # 只爬匯豐銀行
-    # scrape_esun_bank()      # 只爬玉山銀行
-    # save_both_cards_to_txt() #只爬聯邦銀行
-    # 或者只爬取特定卡片
-    # jixie_data = scrape_ubot_jixie_card()  # 只爬吉鶴卡
-    # print(f"吉鶴卡資料行數: {len(jixie_data)}")
+    # scrape_esun_bank()      

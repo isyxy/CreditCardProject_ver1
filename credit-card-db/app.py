@@ -148,9 +148,6 @@ async def root():
             "列出所有卡片": "GET /api/cards",
             "搜尋卡片": "GET /api/cards/search?keyword=xxx",
             "取得單張卡片": "GET /api/cards/{card_id}",
-            "新增卡片": "POST /api/cards",
-            "更新卡片": "PUT /api/cards/{card_id}",
-            "刪除卡片": "DELETE /api/cards/{card_id}",
             "統計資訊": "GET /api/stats"
         }
     }

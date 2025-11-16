@@ -1,5 +1,5 @@
 // src/components/CameraScanner.tsx
-import React, { useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -7,36 +7,116 @@ import {
   TouchableOpacity,
   SafeAreaView,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { CameraView, useCameraPermissions } from 'expo-camera';
+
+type Detection = {
+  label: string;
+  score: number;
+  box: [number, number, number, number];
+};
+
+const API_URL = 'http://192.168.1.10:8000'; // TODO: 依實際後端位置調整
 
 export default function CameraScanner({ navigation }: any) {
+  const cameraRef = useRef<CameraView | null>(null);
+  const [permission, requestPermission] = useCameraPermissions();
+  const [isCameraReady, setIsCameraReady] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
+  const [lastDetection, setLastDetection] = useState<Detection | null>(null);
 
-  const handleScan = () => {
+  const ensurePermission = useCallback(async () => {
+    if (permission?.granted) return true;
+    const result = await requestPermission();
+    if (!result.granted) {
+      Alert.alert('需要相機權限', '請在系統設定內開啟相機權限後再試一次');
+      return false;
+    }
+    return true;
+  }, [permission, requestPermission]);
+
+  const handleScan = useCallback(async () => {
+    if (!cameraRef.current || !isCameraReady) return;
+    const ok = await ensurePermission();
+    if (!ok) return;
+
     setIsScanning(true);
+    try {
+      const photo = await cameraRef.current.takePictureAsync({
+        base64: true,
+        quality: 0.6,
+        skipProcessing: true,
+      });
 
-    // 模擬掃描過程
-    setTimeout(() => {
-      setIsScanning(false);
+      if (!photo.base64) {
+        throw new Error('無法取得相片資料');
+      }
+
+      const resp = await fetch(`${API_URL}/scan`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: photo.base64 }),
+      });
+
+      if (!resp.ok) {
+        throw new Error(`伺服器錯誤（${resp.status}）`);
+      }
+
+      const payload = await resp.json();
+      const detections: Detection[] = payload?.detections ?? [];
+
+      if (!detections.length) {
+        Alert.alert('未偵測到卡片', '請調整角度或光線，再試一次');
+        setLastDetection(null);
+        return;
+      }
+
+      const best = detections[0];
+      setLastDetection(best);
+
       Alert.alert(
         '掃描完成',
-        '已識別信用卡資訊\n\n這是模擬功能,實際使用需要:\n1. 安裝 expo-camera\n2. 實作 OCR 識別\n3. 請求相機權限',
+        `偵測到：${best.label}\n信心值：${(best.score * 100).toFixed(1)}%`,
         [
-          { text: '取消', style: 'cancel' },
+          { text: '留在此頁' },
           {
             text: '前往卡片管理',
-            onPress: () => navigation.navigate('CardManagement'),
+            onPress: () =>
+              navigation.navigate('CardManagement', { detection: best }),
           },
         ]
       );
-    }, 2000);
-  };
+    } catch (err: any) {
+      Alert.alert('掃描失敗', err?.message ?? String(err));
+    } finally {
+      setIsScanning(false);
+    }
+  }, [ensurePermission, isCameraReady, navigation]);
+
+  if (!permission) {
+    return <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }} />;
+  }
+
+  if (!permission.granted) {
+    return (
+      <SafeAreaView style={styles.permissionContainer}>
+        <Feather name="camera-off" size={64} color="#fff" />
+        <Text style={styles.permissionTitle}>需要相機權限</Text>
+        <Text style={styles.permissionText}>
+          允許後即可使用信用卡掃描功能。
+        </Text>
+        <TouchableOpacity style={styles.scanBtn} onPress={requestPermission}>
+          <Text style={styles.scanBtnText}>授權相機</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }}>
       <View style={styles.container}>
-        {/* 頂部控制列 */}
         <View style={styles.topBar}>
           <TouchableOpacity
             style={styles.closeBtn}
@@ -48,9 +128,15 @@ export default function CameraScanner({ navigation }: any) {
           <View style={styles.closeBtn} />
         </View>
 
-        {/* 相機預覽區域 */}
         <View style={styles.cameraView}>
-          {/* 掃描框 */}
+          <CameraView
+            ref={cameraRef}
+            style={StyleSheet.absoluteFill}
+            type="back"
+            ratio="16:9"
+            onCameraReady={() => setIsCameraReady(true)}
+          />
+
           <View style={styles.scanFrame}>
             <View style={[styles.corner, styles.cornerTopLeft]} />
             <View style={[styles.corner, styles.cornerTopRight]} />
@@ -64,36 +150,40 @@ export default function CameraScanner({ navigation }: any) {
             )}
           </View>
 
-          {/* 提示文字 */}
           <View style={styles.instructionBox}>
             <Feather name="credit-card" size={40} color="#fff" />
-            <Text style={styles.instructionText}>
-              將信用卡放入框內
-            </Text>
-            <Text style={styles.instructionSubtext}>
-              確保卡片完整、清晰可見
-            </Text>
+            <Text style={styles.instructionText}>請將信用卡置於框內</Text>
+            <Text style={styles.instructionSubtext}>保持光線充足並穩定持握</Text>
+            {lastDetection && (
+              <View style={styles.detectionBox}>
+                <Text style={styles.detectionText}>
+                  上次偵測：{lastDetection.label}（
+                  {(lastDetection.score * 100).toFixed(1)}%）
+                </Text>
+              </View>
+            )}
           </View>
         </View>
 
-        {/* 底部操作區 */}
         <View style={styles.bottomBar}>
-          {/* 說明 */}
           <View style={styles.infoBox}>
             <Feather name="info" size={16} color="#4F8EF7" />
             <Text style={styles.infoText}>
-              此為模擬功能。實際使用需要安裝相機套件。
+              掃描會呼叫本地 YOLO API，請確認手機與伺服器在同一網路。
             </Text>
           </View>
 
-          {/* 掃描按鈕 */}
           <TouchableOpacity
-            style={[styles.scanBtn, isScanning && styles.scanBtnDisabled]}
+            style={[
+              styles.scanBtn,
+              (!isCameraReady || isScanning) && styles.scanBtnDisabled,
+            ]}
             onPress={handleScan}
-            disabled={isScanning}
+            disabled={!isCameraReady || isScanning}
           >
             {isScanning ? (
               <>
+                <ActivityIndicator color="#fff" style={{ marginRight: 8 }} />
                 <Text style={styles.scanBtnText}>掃描中...</Text>
               </>
             ) : (
@@ -104,12 +194,11 @@ export default function CameraScanner({ navigation }: any) {
             )}
           </TouchableOpacity>
 
-          {/* 手動輸入按鈕 */}
           <TouchableOpacity
             style={styles.manualBtn}
             onPress={() => navigation.navigate('CardManagement')}
           >
-            <Text style={styles.manualBtnText}>手動輸入卡片</Text>
+            <Text style={styles.manualBtnText}>改用手動輸入</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -129,16 +218,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
+  topTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#fff',
+  },
   closeBtn: {
     width: 44,
     height: 44,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  topTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#fff',
   },
   cameraView: {
     flex: 1,
@@ -212,6 +301,17 @@ const styles = StyleSheet.create({
     color: '#aaa',
     marginTop: 8,
   },
+  detectionBox: {
+    marginTop: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  detectionText: {
+    color: '#fff',
+    fontSize: 14,
+  },
   bottomBar: {
     paddingHorizontal: 24,
     paddingBottom: 32,
@@ -257,5 +357,25 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#4F8EF7',
     fontWeight: '600',
+  },
+  permissionContainer: {
+    flex: 1,
+    backgroundColor: '#000',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+  },
+  permissionTitle: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '600',
+    marginTop: 24,
+  },
+  permissionText: {
+    color: '#bbb',
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 12,
+    marginBottom: 24,
   },
 });

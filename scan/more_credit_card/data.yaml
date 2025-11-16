@@ -1,0 +1,21 @@
+train: /Users/lingengren/Desktop/yolo test拷貝/more_credit_card/train/images
+val: /Users/lingengren/Desktop/yolo test拷貝/more_credit_card/valid/images
+test: /Users/lingengren/Desktop/yolo test拷貝/more_credit_card/test/images
+
+nc: 24
+names: ['Everyday_MC', 'Travel_World_Elite_MC', 'classic', 'cru', 'dbs-Vantage', 'dbs-happygo',
+ 'dbs_PChome', 'eco_card_titanium_EZ', 'eco_card_titanium_select', 'eco_card_titanium_select_plus',
+  'eco_card_world', 'eco_titanium_business', 'eco_titanium_business_ipass', 'everyday', 'everyday-Signature',
+   'funlife', 'infinite', 'insignia', 'live_fresh_signature_biz', 'livefresh', 'travel-titanium', 'travelworld',
+    'visa-treasures-biz-signature', 'yours_signature_business_card']
+
+
+roboflow:
+  workspace: cried-card
+  project: more_credit_card
+  version: 1
+  license: Public Domain
+  url: https://universe.roboflow.com/cried-card/more_credit_card/dataset/1
+
+
+  

@@ -3,15 +3,13 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { useCards } from '../context/CardContext';
 
 interface BottomNavProps {
-  activeTab?: 'home' | 'settings';
+  activeTab?: 'home' | 'cards';
 }
 
 export default function BottomNav({ activeTab = 'home' }: BottomNavProps) {
   const navigation = useNavigation();
-  const { setSettingsVisible } = useCards();
 
   return (
     <View style={styles.bottomNav}>
@@ -33,15 +31,15 @@ export default function BottomNav({ activeTab = 'home' }: BottomNavProps) {
 
       <TouchableOpacity
         style={styles.navBtn}
-        onPress={() => setSettingsVisible(true)}
+        onPress={() => navigation.navigate('CardManagement' as never)}
       >
         <Feather
-          name="settings"
+          name="credit-card"
           size={24}
-          color={activeTab === 'settings' ? '#007AFF' : '#666'}
+          color={activeTab === 'cards' ? '#007AFF' : '#666'}
         />
-        <Text style={[styles.navText, activeTab === 'settings' && styles.activeText]}>
-          設定
+        <Text style={[styles.navText, activeTab === 'cards' && styles.activeText]}>
+          信用卡
         </Text>
       </TouchableOpacity>
     </View>

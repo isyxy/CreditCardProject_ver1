@@ -8,13 +8,12 @@ import CardManagementScreen from './CardManagementScreen';
 import RecommendationScreen from './RecommendationScreen';
 import SearchScreen from './SearchScreen';
 import CameraScanner from './CameraScanner';
-import SettingsModal from './SettingsModal';
 
 const Stack = createStackNavigator();
 
 // 內部導航元件 (可以使用 useCards Hook)
 function AppNavigator() {
-  const { settingsVisible, setSettingsVisible, loadCards } = useCards();
+  const { loadCards } = useCards();
 
   // 啟動時載入已儲存的卡片
   useEffect(() => {
@@ -22,27 +21,20 @@ function AppNavigator() {
   }, []);
 
   return (
-    <>
-      <Stack.Navigator 
-        initialRouteName="Home" 
-        screenOptions={{ headerShown: false }}
-      >
-        <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="CardManagement" component={CardManagementScreen} />
-        <Stack.Screen name="Recommendation" component={RecommendationScreen} />
-        <Stack.Screen name="Search" component={SearchScreen} />
-        <Stack.Screen 
-          name="CameraScanner" 
-          component={CameraScanner}
-          options={{ presentation: 'modal' }}
-        />
-      </Stack.Navigator>
-      
-      <SettingsModal 
-        visible={settingsVisible} 
-        onClose={() => setSettingsVisible(false)} 
+    <Stack.Navigator
+      initialRouteName="Home"
+      screenOptions={{ headerShown: false }}
+    >
+      <Stack.Screen name="Home" component={HomeScreen} />
+      <Stack.Screen name="CardManagement" component={CardManagementScreen} />
+      <Stack.Screen name="Recommendation" component={RecommendationScreen} />
+      <Stack.Screen name="Search" component={SearchScreen} />
+      <Stack.Screen
+        name="CameraScanner"
+        component={CameraScanner}
+        options={{ presentation: 'modal' }}
       />
-    </>
+    </Stack.Navigator>
   );
 }
 

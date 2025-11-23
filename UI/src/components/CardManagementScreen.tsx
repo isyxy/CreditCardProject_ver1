@@ -9,12 +9,9 @@ import {
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
-  Alert,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useCards } from '../context/CardContext';
-import { availableCreditCards, type AvailableCreditCard } from '../data/creditCards';
-import { CreditCard } from '../types';
 import { getCashbackSummary } from '../utils/cashbackCalculator';
 import BottomNav from './BottomNav';
 
@@ -28,11 +25,12 @@ const bankTags = [
 ];
 
 export default function CardManagementScreen({ navigation }: any) {
-  const { cards, addCard, removeCard, toggleCard } = useCards();
+  const { cards, toggleCard } = useCards();
   const [searchText, setSearchText] = useState('');
   const [selectedBank, setSelectedBank] = useState('全部');
 
-  const filteredCards = availableCreditCards.filter((card) => {
+  // 只顯示已新增的卡片
+  const filteredCards = cards.filter((card) => {
     const matchBank = selectedBank === '全部' || card.bankName === selectedBank;
     const matchSearch =
       searchText === '' ||
@@ -40,35 +38,6 @@ export default function CardManagementScreen({ navigation }: any) {
       card.bankName.toLowerCase().includes(searchText.toLowerCase());
     return matchBank && matchSearch;
   });
-
-  const isCardAdded = (cardName: string, bankName: string) => {
-    return cards.some((c) => c.cardName === cardName && c.bankName === bankName);
-  };
-
-  const getAddedCard = (cardName: string, bankName: string) => {
-    return cards.find((c) => c.cardName === cardName && c.bankName === bankName);
-  };
-
-  const handleAddCard = (card: AvailableCreditCard) => {
-    const newCard: CreditCard = {
-      ...card,
-      id: `${card.bankName}_${card.cardName}_${Date.now()}`,
-      isActive: true,
-    };
-    addCard(newCard);
-    Alert.alert('成功', `已新增 ${card.bankName} ${card.cardName}`);
-  };
-
-  const handleRemoveCard = (cardId: string, cardName: string) => {
-    Alert.alert('確認移除', `確定要移除 ${cardName} 嗎?`, [
-      { text: '取消', style: 'cancel' },
-      {
-        text: '移除',
-        style: 'destructive',
-        onPress: () => removeCard(cardId),
-      },
-    ]);
-  };
 
   const handleToggleCard = (cardId: string) => {
     toggleCard(cardId);
@@ -78,23 +47,8 @@ export default function CardManagementScreen({ navigation }: any) {
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F8FA' }}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-            <Feather name="arrow-left" size={24} color="#222" />
-          </TouchableOpacity>
-          <Text style={styles.title}>管理信用卡</Text>
-          <View style={styles.backBtn} />
-        </View>
-
-        <View style={styles.statsBar}>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{cards.length}</Text>
-            <Text style={styles.statLabel}>已新增</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{cards.filter((c) => c.isActive).length}</Text>
-            <Text style={styles.statLabel}>已啟用</Text>
-          </View>
+          <Text style={styles.title}>我的信用卡</Text>
+          <Text style={styles.subtitle}>管理您的信用卡並選擇要啟用的卡片</Text>
         </View>
 
         <View style={styles.searchBarRow}>
@@ -141,62 +95,48 @@ export default function CardManagementScreen({ navigation }: any) {
         </ScrollView>
 
         <ScrollView style={styles.list} contentContainerStyle={{ paddingBottom: 80 }}>
-          <Text style={styles.sectionTitle}>可用卡片 ({filteredCards.length})</Text>
+          <View style={styles.statsBar}>
+            <Text style={styles.statLabel}>
+              已啟用 {cards.filter((c) => c.isActive).length} / {cards.length} 張卡片
+            </Text>
+          </View>
 
-          {filteredCards.map((card, index) => {
-            const added = isCardAdded(card.cardName, card.bankName);
-            const addedCard = getAddedCard(card.cardName, card.bankName);
-
-            return (
-              <View key={`${card.bankName}-${card.cardName}-${index}`} style={styles.cardBox}>
-                <Image source={card.logo as any} style={styles.cardLogo} />
-                <View style={styles.cardInfo}>
-                  <Text style={styles.cardName}>{card.cardName}</Text>
-                  <Text style={styles.cardBank}>{card.bankName}</Text>
-                  <Text style={styles.cardCashback}>{getCashbackSummary(card.cashback)}</Text>
-                </View>
-
-                {added && addedCard ? (
-                  <View style={styles.cardActions}>
-                    <TouchableOpacity
-                      style={[styles.toggleBtn, addedCard.isActive && styles.toggleBtnActive]}
-                      onPress={() => handleToggleCard(addedCard.id)}
-                    >
-                      <Feather
-                        name={addedCard.isActive ? 'check-circle' : 'circle'}
-                        size={18}
-                        color={addedCard.isActive ? '#4F8EF7' : '#ccc'}
-                      />
-                      <Text style={[styles.toggleText, addedCard.isActive && styles.toggleTextActive]}>
-                        {addedCard.isActive ? '已啟用' : '未啟用'}
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.removeBtn}
-                      onPress={() => handleRemoveCard(addedCard.id, card.cardName)}
-                    >
-                      <Feather name="trash-2" size={18} color="#ff4444" />
-                    </TouchableOpacity>
-                  </View>
-                ) : (
-                  <TouchableOpacity style={styles.addBtn} onPress={() => handleAddCard(card)}>
-                    <Feather name="plus" size={18} color="#fff" />
-                    <Text style={styles.addBtnText}>新增</Text>
-                  </TouchableOpacity>
-                )}
+          {filteredCards.map((card, index) => (
+            <View key={`${card.bankName}-${card.cardName}-${index}`} style={styles.cardBox}>
+              <Image source={card.logo as any} style={styles.cardLogo} />
+              <View style={styles.cardInfo}>
+                <Text style={styles.cardName}>{card.cardName}</Text>
+                <Text style={styles.cardBank}>{card.bankName}</Text>
+                <Text style={styles.cardCashback}>{getCashbackSummary(card.cashback)}</Text>
               </View>
-            );
-          })}
+
+              <TouchableOpacity
+                style={[styles.toggleBtn, card.isActive && styles.toggleBtnActive]}
+                onPress={() => handleToggleCard(card.id)}
+              >
+                <Feather
+                  name={card.isActive ? 'check-circle' : 'circle'}
+                  size={20}
+                  color={card.isActive ? '#4F8EF7' : '#ccc'}
+                />
+                <Text style={[styles.toggleText, card.isActive && styles.toggleTextActive]}>
+                  {card.isActive ? '已啟用' : '已停用'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ))}
 
           {filteredCards.length === 0 && (
             <View style={styles.emptyState}>
               <Feather name="credit-card" size={48} color="#ccc" />
-              <Text style={styles.emptyText}>找不到相關卡片</Text>
+              <Text style={styles.emptyText}>
+                {cards.length === 0 ? '尚無信用卡' : '找不到相關卡片'}
+              </Text>
             </View>
           )}
         </ScrollView>
 
-        <BottomNav activeTab="settings" />
+        <BottomNav activeTab="cards" />
       </View>
     </SafeAreaView>
   );
@@ -205,34 +145,24 @@ export default function CardManagementScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F7F8FA' },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 16,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
-  backBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  title: { fontSize: 18, fontWeight: 'bold', color: '#222' },
+  title: { fontSize: 24, fontWeight: 'bold', color: '#222', marginBottom: 4 },
+  subtitle: { fontSize: 14, color: '#888' },
   statsBar: {
-    flexDirection: 'row',
-    backgroundColor: '#fff',
+    backgroundColor: '#E8F4FF',
     marginHorizontal: 16,
-    marginTop: 16,
-    marginBottom: 12,
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 2,
-    elevation: 1,
+    marginBottom: 16,
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
   },
-  statItem: { flex: 1, alignItems: 'center' },
-  statNumber: { fontSize: 28, fontWeight: 'bold', color: '#4F8EF7' },
-  statLabel: { fontSize: 13, color: '#888', marginTop: 4 },
-  statDivider: { width: 1, backgroundColor: '#eee', marginHorizontal: 16 },
+  statLabel: { fontSize: 14, color: '#4F8EF7', fontWeight: '600', textAlign: 'center' },
   searchBarRow: { marginBottom: 12, paddingHorizontal: 16 },
   searchBar: {
     flexDirection: 'row',
@@ -282,29 +212,17 @@ const styles = StyleSheet.create({
   cardName: { fontSize: 16, fontWeight: '600', color: '#222', marginBottom: 2 },
   cardBank: { fontSize: 13, color: '#888', marginBottom: 4 },
   cardCashback: { fontSize: 12, color: '#4F8EF7' },
-  cardActions: { flexDirection: 'row', alignItems: 'center' },
   toggleBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#f5f5f5',
     borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    marginRight: 8,
-  },
-  toggleBtnActive: { backgroundColor: '#E8F4FF' },
-  toggleText: { fontSize: 13, color: '#999', marginLeft: 4 },
-  toggleTextActive: { color: '#4F8EF7', fontWeight: '600' },
-  removeBtn: { padding: 8 },
-  addBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#4F8EF7',
-    borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
-  addBtnText: { color: '#fff', fontSize: 14, fontWeight: '600', marginLeft: 4 },
+  toggleBtnActive: { backgroundColor: '#E8F4FF' },
+  toggleText: { fontSize: 14, color: '#999', marginLeft: 6 },
+  toggleTextActive: { color: '#4F8EF7', fontWeight: '600' },
   emptyState: { alignItems: 'center', justifyContent: 'center', paddingVertical: 60 },
   emptyText: { fontSize: 16, color: '#999', marginTop: 12 },
 });

@@ -6,7 +6,7 @@
 const creditCardRewardsData = {
   cards: [
     // ========================================
-    // 中國信託 OPENPOINT 聯名卡
+    // 中國信託 OPENPOINT 聯名卡（更新版）
     // ========================================
     {
       id: "ctbc-openpoint",
@@ -16,52 +16,76 @@ const creditCardRewardsData = {
       rewardType: "OPENPOINT",
       rewardValue: 1, // 1點 = NT$1
       
+      period: "2025/8/21-2026/8/31",
+      
       // 基礎回饋規則
       baseRewards: {
         domestic: {
           name: "國內一般消費",
           rate: 1,
           unit: "%",
-          limit: null, // 無上限
-          limitType: null
+          limit: null
         },
-        foreignOnline: {
-          name: "國外一般消費",
+        foreign: {
+          name: "海外一般消費",
           rate: 2,
           unit: "%",
           limit: null,
-          limitType: null
+          additionalRate: 1,
+          additionalCondition: "實體卡或行動支付面對面交易",
+          totalRate: 3
         },
         foreignInStore: {
           name: "國外實體商店消費",
           rate: 3,
           unit: "%",
-          limit: null,
-          limitType: null
+          limit: null
         }
       },
       
       // 特殊回饋規則
       specialRewards: {
+        speedyGas: {
+          name: "速邁樂加油站",
+          rate: 12,
+          unit: "%",
+          limit: 12500,
+          limitType: "monthly",
+          condition: "週四人工島+實體卡支付",
+          fallbackRate: 7,
+          exclusions: ["自助加油", "柴油", "油精", "洗車", "雨刷", "副產品"],
+          period: "2025/8/21-2025/12/31"
+        },
+        foreignSpecial: {
+          name: "日韓泰越菲實體店",
+          rate: 11,
+          unit: "%",
+          limit: 6250,
+          limitType: "monthly",
+          condition: "需每月領券",
+          countries: ["日本", "韓國", "泰國", "越南", "菲律賓"],
+          period: "2025/8/21-2025/12/31"
+        },
         unified: {
           name: "統一企業集團消費",
           baseRate: 1,
           bonusRate: 2,
           totalRate: 3,
           unit: "%",
-          limit: 500,
-          limitType: "monthly", // 每月上限
+          limit: 12500,
+          limitType: "monthly",
           description: "基礎1% + 統一集團加碼2%",
           brands: [
-            "統一超商", "康是美", "康是美網購eShop", "夢時代購物中心", 
-            "統一時代百貨", "DREAM PLAZA", "UNIKCY", "玲廊滿藝",
+            "統一超商", "康是美", "夢時代購物中心", "統一時代百貨",
+            "DREAM PLAZA", "UNIKCY", "玲廊滿藝",
             "BEING sport", "BEING spa", "BEING fit", "星巴克",
             "21Plus", "21風味館", "Mister Donut", "COLD STONE",
             "Semeur聖娜", "家樂福", "Mia C'bon", "Yahoo購物",
             "博客來", "聖德科斯", "統一生機", "統一精工速邁樂加油站",
             "foodomo", "鮮拾網", "DUSKIN", "黑貓宅急便",
             "ibon售票系統", "統一渡假村", "台北W飯店", "台北時代寓所"
-          ]
+          ],
+          period: "2025/8/21-2026/8/31"
         },
         unifiedBrandBonus: {
           name: "統一企業集團踩點任務",
@@ -74,15 +98,23 @@ const creditCardRewardsData = {
             5: 4   // 5個以上品牌：+4%
           },
           unit: "%",
-          limit: 500,
+          limit: 12500,
           limitType: "monthly",
           maxRate: 4,
-          requirement: "每月登入中信銀行APP領優惠券"
+          requirement: "每月登入中信銀行APP領優惠券",
+          period: "2025/8/21-2026/8/31"
         }
       },
       
       // 最高回饋情境
       maxRewardScenarios: {
+        speedyGas: {
+          name: "速邁樂週四加油",
+          totalRate: 12,
+          conditions: ["週四", "人工島", "實體卡支付"],
+          limit: 12500,
+          limitType: "monthly"
+        },
         unified: {
           name: "統一企業集團最高回饋",
           totalRate: 7,
@@ -90,21 +122,17 @@ const creditCardRewardsData = {
           conditions: [
             "每月登入中信APP領券",
             "消費5個以上不同統一集團品牌",
-            "統一集團加碼每月上限500點",
-            "踩點任務每月上限500點"
+            "統一集團加碼每月上限12,500點",
+            "踩點任務每月上限12,500點"
           ]
         },
         foreign: {
-          name: "國外實體店最高回饋",
+          name: "日韓泰越菲實體店",
           totalRate: 11,
-          breakdown: "3%(國外實體) + 8%(指定國家加碼)",
           countries: ["日本", "韓國", "泰國", "越南", "菲律賓"],
-          limit: 500,
+          limit: 6250,
           limitType: "monthly",
-          conditions: [
-            "每月登入中信APP領券",
-            "於指定國家實體商店消費"
-          ]
+          conditions: ["需每月登入APP領券"]
         }
       },
       
@@ -121,14 +149,15 @@ const creditCardRewardsData = {
       // 注意事項
       notes: [
         "OPENPOINT 1點 = NT$1",
-        "統一集團加碼需符合品牌定義",
-        "踩點任務需每月登入APP領券",
+        "速邁樂週四人工島12%，其他7%",
+        "統一集團踩點需每月登入APP領券",
+        "日韓泰越菲需每月領券",
         "實際回饋以銀行公告為準"
       ]
     },
     
     // ========================================
-    // 中國信託 LINE Pay 信用卡
+    // 中國信託 LINE Pay 信用卡（更新版）
     // ========================================
     {
       id: "ctbc-linepay",
@@ -145,138 +174,110 @@ const creditCardRewardsData = {
           rate: 1,
           unit: "%",
           limit: null,
-          limitType: null
+          condition: "需綁定LINE Pay且限台灣LINE帳號"
         },
         foreignInStore: {
           name: "國外實體商店消費",
           rate: 2.8,
           unit: "%",
           limit: null,
-          limitType: null,
           breakdown: "一般1% + 國外實體加碼1.8%",
           conditions: [
             "須為面對面交易",
             "實體卡/Apple Pay/Google Pay/Samsung Pay",
             "不含網路交易、條碼支付、第三方支付"
-          ],
-          period: "2025/7/1-2025/12/31"
+          ]
         }
       },
       
-      // 指定通路回饋（簡化版）
+      // 指定通路回饋
       specialRewards: {
-        delivery: {
-          name: "外送平台",
-          rate: 5,
-          unit: "%",
-          limit: 100,
-          limitType: "monthly",
-          description: "Uber Eats/星巴克等，需VISA卡登錄",
-          brands: ["Uber Eats", "foodpanda", "星巴克"],
-          conditions: ["VISA卡", "需事先登錄", "每月限量10,000名"]
-        },
-        japanese: {
+        japanese10: {
           name: "日式餐飲/購物",
           rate: 10,
           unit: "%",
-          limit: 200,
-          limitType: "activity", // 活動期間總上限
-          description: "壽司郎/摩斯/藏壽司/唐吉訶德/UNIQLO/GU/宜得利等，需JCB卡登錄",
-          brands: [
-            "壽司郎", "摩斯漢堡", "藏壽司", "客美多咖啡",
-            "唐吉訶德", "UNIQLO", "GU", "宜得利", "台灣虎航"
-          ],
-          conditions: ["JCB卡", "需事先登錄", "每月限量5,000名"]
-        },
-        shopping: {
-          name: "網購平台",
-          rate: 5,
-          unit: "%",
-          limit: 100,
+          limit: 2000,
           limitType: "monthly",
-          description: "蝦皮等需VISA卡登錄；PChome等透過ShopBack 3%",
-          brands: ["蝦皮購物", "PChome 24h", "Yahoo購物", "pinkoi"],
-          conditions: ["VISA卡需登錄或透過ShopBack"]
-        },
-        beauty: {
-          name: "美妝保養",
-          rate: 7,
-          unit: "%",
-          limit: 150,
-          limitType: "monthly",
-          description: "屈臣氏週五/雅詩蘭黛等品牌官網6%",
-          brands: ["屈臣氏", "POYA寶雅", "雅詩蘭黛", "LA MER", "MAC", "資生堂"],
-          conditions: ["屈臣氏限週五", "部分品牌限官網", "LINE Pay支付"]
-        },
-        lifestyle: {
-          name: "生活百貨",
-          rate: 5,
-          unit: "%",
-          limit: 100,
-          limitType: "monthly",
-          description: "家樂福/IKEA等，需VISA卡登錄",
-          brands: ["家樂福", "IKEA", "小北百貨", "dyson", "OWNDAYS"],
-          conditions: ["VISA卡需登錄", "每月限量10,000名"]
-        },
-        travel: {
-          name: "旅遊訂房",
-          rate: 10,
-          unit: "%",
-          limit: 1800,
-          limitType: "perTransaction", // 單筆上限
-          description: "Hotels.com 16%(需代碼)/Klook 10%",
-          brands: ["Hotels.com", "Klook", "易遊網", "KKday"],
-          conditions: [
-            "Hotels.com需輸入代碼CTBCLP16享16%",
-            "Klook需輸入優惠代碼",
-            "部分有每月名額限制"
+          condition: "JCB卡需登錄，每月限量5,000名",
+          period: "2025/10/1-2025/12/31",
+          merchants: [
+            "壽司郎", "客美多咖啡", "摩斯漢堡", "藏壽司",
+            "DON DON DONKI", "宜得利家居", "UNIQLO", "GU",
+            "台灣虎航", "山富旅遊"
           ]
         },
-        gas: {
-          name: "交通加油",
+        watsons: {
+          name: "屈臣氏週五",
+          rate: 7,
+          unit: "%",
+          limit: 2500,
+          limitType: "活動期間",
+          condition: "每週五單筆滿NT$888",
+          period: "2025/7/1-2025/12/31",
+          merchants: ["屈臣氏"]
+        },
+        npcGas: {
+          name: "NPC全國加油站",
           rate: 5,
           unit: "%",
           limit: null,
-          limitType: null,
-          description: "NPC全國加油站自助加油",
-          brands: ["NPC加油站"],
-          conditions: ["限自助加油"]
+          condition: "限自助加油",
+          period: "2025/1/1-2025/12/31",
+          merchants: ["NPC全國加油站"]
         },
-        transit: {
-          name: "一卡通交通",
-          rate: 1,
+        usaJapanKoreaThailand: {
+          name: "美日韓泰實體店",
+          rate: 5,
           unit: "%",
-          limit: null,
-          limitType: null,
-          description: "需綁定LINE Pay卡之一卡通",
-          includes: ["捷運", "輕軌", "台鐵", "公車", "公共自行車", "渡輪"],
-          excludes: ["高鐵", "計程車"],
-          conditions: ["須綁定LINE Pay卡之一卡通功能"],
-          period: "2025/7/1-2025/12/31"
+          limit: 20455,
+          limitType: "活動期間",
+          condition: "需登錄限量，每週二開放3,000名，限實體面對面交易",
+          period: "2025/10/1-2025/12/1",
+          countries: ["美國", "日本", "韓國", "泰國"]
+        },
+        visa5: {
+          name: "VISA卡指定通路",
+          rate: 5,
+          unit: "%",
+          limit: 2000,
+          limitType: "monthly",
+          condition: "VISA卡需登錄，每月限量10,000名",
+          period: "2025/10/1-2025/12/31",
+          merchants: ["IKEA", "Uber Eats", "星巴克", "家樂福"]
         }
       },
       
-      // 最高回饋情境
-      maxRewardScenarios: {
-        hotelBooking: {
-          name: "訂房最高回饋",
-          totalRate: 16,
-          platform: "Hotels.com",
-          conditions: [
-            "輸入優惠代碼CTBCLP16",
-            "單筆回饋上限1,800點",
-            "每月限額400組"
-          ]
+      // 簡化版分類
+      simplifiedCategories: {
+        "日式10%": {
+          merchants: ["壽司郎", "摩斯", "藏壽司", "唐吉訶德", "UNIQLO", "GU", "宜得利"],
+          rate: 10,
+          condition: "JCB卡登錄",
+          limit: 2000
         },
-        foreignJapanese: {
-          name: "美日韓泰實體店",
-          totalRate: 5,
-          breakdown: "國外實體2.8% + 加碼2.2%",
-          limit: 450,
-          limitType: "activity",
-          countries: ["美國", "日本", "韓國", "泰國"],
-          conditions: ["需登錄", "限量名額"],
-          period: "2025/10/1-2025/12/31"
+        "屈臣氏7%": {
+          merchants: ["屈臣氏"],
+          rate: 7,
+          condition: "週五單筆滿888",
+          limit: 2500
+        },
+        "VISA 5%": {
+          merchants: ["IKEA", "Uber Eats", "星巴克", "家樂福"],
+          rate: 5,
+          condition: "VISA卡登錄",
+          limit: 2000
+        },
+        "NPC加油5%": {
+          merchants: ["NPC加油站"],
+          rate: 5,
+          condition: "自助加油",
+          limit: null
+        },
+        "國外2.8%": {
+          merchants: ["國外實體店"],
+          rate: 2.8,
+          condition: "面對面交易",
+          limit: null
         }
       },
       
@@ -297,12 +298,12 @@ const creditCardRewardsData = {
       // 注意事項
       notes: [
         "LINE POINTS 1點 = NT$1",
+        "需綁定LINE Pay且限台灣LINE帳號",
         "指定通路需登錄才享優惠(VISA或JCB)",
-        "部分通路有每月名額限制",
         "VISA通路每月限量10,000名",
         "JCB通路每月限量5,000名",
-        "實際回饋以銀行公告為準",
-        "活動期間依各通路公告"
+        "國外實體需面對面交易",
+        "實際回饋以銀行公告為準"
       ]
     },
     
@@ -1078,6 +1079,561 @@ const creditCardRewardsData = {
         "慶生月需生日前月20日前持卡",
         "童樂匯需符合解鎖條件",
         "實際回饋以銀行公告為準"
+      ]
+    },
+    
+    // ========================================
+    // 滙豐 Live+ 卡
+    // ========================================
+    {
+      id: "hsbc-live-plus",
+      name: "滙豐 Live+ 卡",
+      bank: "滙豐銀行",
+      cardType: "現金回饋卡",
+      rewardType: "現金回饋",
+      rewardValue: 1,
+      
+      period: "2025/7/1-2025/12/31",
+      
+      baseRewards: {
+        general: {
+          name: "國內一般消費",
+          rate: 1.88,
+          unit: "%",
+          limit: null,
+          condition: "其中1%需設定自動扣繳"
+        }
+      },
+      
+      specialRewards: {
+        asianDining: {
+          name: "亞洲指定國家餐飲",
+          rate: 5.88,
+          unit: "%",
+          limit: 20000,
+          limitType: "monthly",
+          countries: ["日本", "新加坡", "馬來西亞", "越南", "菲律賓", "印度", "斯里蘭卡"],
+          mccCodes: ["5441", "5499", "5812", "5813", "5814"],
+          condition: "其中1%需設定自動扣繳"
+        },
+        globalDiningShoppingEntertainment: {
+          name: "全球餐飲/購物/娛樂",
+          rate: 4.88,
+          unit: "%",
+          limit: 29600,
+          limitType: "monthly",
+          categories: {
+            "餐飲": ["全球餐飲"],
+            "購物": ["全球購物"],
+            "娛樂": ["全球娛樂"]
+          },
+          mccCodes: {
+            "餐飲": ["5441", "5499", "5812", "5813", "5814"],
+            "購物": ["5311", "5944", "5948"],
+            "娛樂": ["7832", "7996", "7998"]
+          },
+          condition: "其中1%需設定自動扣繳"
+        },
+        specificMerchants: {
+          name: "指定通路",
+          rate: 4.88,
+          unit: "%",
+          limit: 29600,
+          limitType: "monthly",
+          merchants: [
+            "蝦皮購物", "PChome 24h", "酷澎", "eBay", "Amazon",
+            "friday購物", "gomaji", "麥當勞", "星巴克", "王品集團",
+            "饗賓餐旅", "瓦城", "鼎泰豐", "海底撈", "壽司郎",
+            "藏壽司", "爭鮮", "IKEA", "台北101", "三井OUTLET",
+            "微風", "遠東SOGO", "新光三越", "華泰名品城",
+            "遊樂園", "影城"
+          ]
+        }
+      },
+      
+      exclusions: [],
+      
+      notes: [
+        "1%基礎回饋需設定自動扣繳",
+        "亞洲餐飲每月上限NT$20,000",
+        "全球餐飲/購物/娛樂每月上限NT$29,600",
+        "以MCC code判定"
+      ]
+    },
+    
+    // ========================================
+    // 永豐 DAWHO 卡
+    // ========================================
+    {
+      id: "sinopac-dawho",
+      name: "永豐 DAWHO 卡",
+      bank: "永豐銀行",
+      cardType: "數位帳戶卡",
+      rewardType: "現金回饋",
+      rewardValue: 1,
+      
+      period: "2025/7/1-2025/12/31",
+      
+      baseRewards: {
+        domestic: {
+          name: "國內一般消費",
+          rate: 1,
+          unit: "%",
+          limit: null,
+          additionalRate: 1,
+          additionalCondition: "大戶等級+DAWHO扣繳+e化帳單",
+          additionalLimit: 30000,
+          totalRate: 2
+        },
+        foreign: {
+          name: "海外一般消費",
+          rate: 2,
+          unit: "%",
+          limit: null,
+          additionalRate: 1,
+          additionalCondition: "大戶等級+DAWHO扣繳+e化帳單",
+          additionalLimit: 30000,
+          totalRate: 3
+        }
+      },
+      
+      specialRewards: {
+        digitalLife: {
+          name: "數位生活",
+          rate: 7,
+          unit: "%",
+          limit: 6000,
+          limitType: "monthly",
+          condition: "認列為國外消費+大戶+DAWHO扣繳+e化",
+          merchants: [
+            "Netflix", "Spotify", "Disney+", "PlayStation", "XBOX",
+            "Steam", "YouTube Premium", "Google Play", "Apple服務",
+            "Apple直營店", "Uber", "特斯拉充電", "EVALUE", "EVOASIS",
+            "Gogoro", "Klook", "KKday", "Agoda", "AsiaYo",
+            "免稅店", "航空", "飯店", "Udemy", "ChatGPT",
+            "Gemini", "Claude", "Microsoft 365"
+          ]
+        },
+        lifestyle: {
+          name: "生活娛樂",
+          rate: 6,
+          unit: "%",
+          limit: 6000,
+          limitType: "monthly",
+          condition: "大戶+DAWHO扣繳+e化",
+          merchants: [
+            "國內電影院", "KKBOX", "OPENTIX", "拓元售票",
+            "寬宏售票", "年代售票", "KKTIX", "王品集團",
+            "GoShare", "停車場", "Hahow", "PressPlay",
+            "博客來", "IKEA", "誠品生活", "特力屋", "HOLA",
+            "Pinkoi", "寵物用品", "旅行社"
+          ]
+        },
+        delivery: {
+          name: "外送平台",
+          rate: 5,
+          unit: "%",
+          limit: 6000,
+          limitType: "monthly",
+          condition: "大戶+DAWHO扣繳+e化",
+          merchants: ["Foodpanda", "Uber Eats", "悠遊卡自動加值"]
+        }
+      },
+      
+      notes: [
+        "大戶等級：DAWHO帳戶資產達10萬",
+        "需綁定DAWHO數位帳戶自動扣繳",
+        "需使用電子或行動帳單",
+        "數位生活需認列為國外消費才享7%"
+      ]
+    },
+    
+    // ========================================
+    // 永豐 DAWAY 卡
+    // ========================================
+    {
+      id: "sinopac-daway",
+      name: "永豐 DAWAY 卡",
+      bank: "永豐銀行",
+      cardType: "韓國專用卡",
+      rewardType: "現金回饋",
+      rewardValue: 1,
+      
+      period: "2025/10/1-2025/12/31",
+      
+      baseRewards: {
+        domestic: {
+          name: "國內一般消費",
+          rate: 0.5,
+          unit: "%",
+          limit: null
+        },
+        foreign: {
+          name: "海外一般消費",
+          rate: 2.5,
+          unit: "%",
+          limit: null
+        }
+      },
+      
+      specialRewards: {
+        koreaPremium: {
+          name: "韓國指定店家（單筆滿₩190,000）",
+          rate: 22.5,
+          unit: "%",
+          limit: 20000,
+          limitType: "活動期間",
+          condition: "單筆滿₩190,000再回饋10%",
+          merchants: [
+            "LOTTE MART", "新羅免稅店", "樂天免稅店",
+            "TOPTEN10", "INNISFREE", "Sulwhasoo雪花秀",
+            "DOOTA Mall", "SAMSUNG C&T", "CU超商",
+            "ABC Mart", "EVERLAND愛寶樂園", "SPAO", "MIXXO"
+          ]
+        },
+        koreaStandard: {
+          name: "韓國指定店家（一般）",
+          rate: 20,
+          unit: "%",
+          limit: 30000,
+          limitType: "活動期間",
+          condition: "單筆滿₩190,000再回饋10%",
+          merchants: ["同上指定店家"]
+        },
+        koreaGeneral: {
+          name: "韓國當地消費",
+          rate: 5,
+          unit: "%",
+          limit: 20000,
+          limitType: "活動期間",
+          condition: "需登錄，名額無限"
+        },
+        linepay: {
+          name: "LINE Pay",
+          rate: 2,
+          unit: "%",
+          limit: 20000,
+          limitType: "活動期間",
+          condition: "設定自動扣繳"
+        }
+      },
+      
+      notes: [
+        "主打韓國消費",
+        "單筆滿₩190,000享最高22.5%",
+        "需注意各項目上限"
+      ]
+    },
+    
+    // ========================================
+    // 永豐 SPORT 卡
+    // ========================================
+    {
+      id: "sinopac-sport",
+      name: "永豐 SPORT 卡",
+      bank: "永豐銀行",
+      cardType: "運動健身卡",
+      rewardType: "現金回饋",
+      rewardValue: 1,
+      
+      period: "2025/7/1-2025/12/31",
+      
+      baseRewards: {
+        domestic: {
+          name: "國內一般消費",
+          rate: 1,
+          unit: "%",
+          limit: null,
+          additionalRate: 1,
+          additionalCondition: "汗水不白流APP達標+永豐扣繳",
+          additionalLimit: 5000,
+          totalRate: 2
+        }
+      },
+      
+      specialRewards: {
+        fitness: {
+          name: "健身運動",
+          rate: 6,
+          unit: "%",
+          limit: 5000,
+          limitType: "monthly",
+          condition: "消費NT$5,000-7,500間享5%",
+          merchants: [
+            "World Gym", "健身工廠", "True Yoga", "Curves",
+            "運動中心", "Anytime Fitness", "屈臣氏", "康是美",
+            "寶雅", "大樹藥局", "App Store", "Google Play",
+            "Nintendo", "PlayStation", "Steam",
+            "Apple Pay", "Google Pay", "Samsung Pay", "Garmin Pay"
+          ]
+        }
+      },
+      
+      notes: [
+        "APP達標：10,000大卡或Apple Watch圓滿劃圈10次",
+        "需設定永豐帳戶自動扣繳",
+        "健身回饋上限NT$5,000"
+      ]
+    },
+    
+    // ========================================
+    // 永豐 Green 卡
+    // ========================================
+    {
+      id: "sinopac-green",
+      name: "永豐 Green 卡",
+      bank: "永豐銀行",
+      cardType: "環保生活卡",
+      rewardType: "現金回饋",
+      rewardValue: 1,
+      
+      period: "2025/7/1-2025/12/31",
+      
+      baseRewards: {
+        domestic: {
+          name: "國內一般消費",
+          rate: 1,
+          unit: "%",
+          limit: null
+        },
+        foreign: {
+          name: "海外一般消費",
+          rate: 2,
+          unit: "%",
+          limit: null
+        }
+      },
+      
+      specialRewards: {
+        green: {
+          name: "綠色生活",
+          rate: 5,
+          unit: "%",
+          limit: 7500,
+          limitType: "monthly",
+          condition: "e化帳單+扣繳或當期消費滿NT$2,000",
+          merchants: [
+            "悠遊卡自動加值", "愛買", "家樂福", "大潤發",
+            "UNIQLO", "H&M", "ZARA", "GU", "GAP", "NET",
+            "新光影城", "威秀影城", "喜樂時代影城",
+            "藏壽司", "MOS", "築間", "義美食品"
+          ]
+        }
+      },
+      
+      notes: [
+        "需設定電子或行動帳單",
+        "需設定自動扣繳或當期消費滿NT$2,000",
+        "每月上限NT$7,500"
+      ]
+    },
+    
+    // ========================================
+    // 富邦 J 卡
+    // ========================================
+    {
+      id: "fubon-j",
+      name: "富邦 J 卡",
+      bank: "富邦銀行",
+      cardType: "日韓泰旅遊卡",
+      rewardType: "J Cash/LINE POINTS",
+      rewardValue: 1,
+      
+      period: "2025/10/1-2025/12/31",
+      
+      baseRewards: {
+        domestic: {
+          name: "國內一般消費",
+          rate: 1,
+          unit: "%",
+          limit: null,
+          condition: "核卡時選擇J Cash或LINE POINTS"
+        }
+      },
+      
+      specialRewards: {
+        japanTransport: {
+          name: "日本交通卡儲值",
+          rate: 10,
+          unit: "%",
+          limit: 2857,
+          limitType: "monthly",
+          condition: "Apple Pay綁定J卡儲值，單筆滿NT$2,000",
+          merchants: ["Suica", "PASMO", "ICOCA"],
+          requirement: "需登錄且限量"
+        },
+        japanKorea: {
+          name: "日韓實體店",
+          rate: 6,
+          unit: "%",
+          limit: 33333,
+          limitType: "quarterly",
+          condition: "需登錄且限量",
+          countries: ["日本", "韓國"]
+        },
+        thailand: {
+          name: "泰國實體店",
+          rate: 6,
+          unit: "%",
+          limit: 20000,
+          limitType: "quarterly",
+          condition: "需登錄且限量",
+          countries: ["泰國"]
+        },
+        japanKoreaOnline: {
+          name: "日韓網購",
+          rate: 3,
+          unit: "%",
+          limit: null,
+          countries: ["日本", "韓國"]
+        },
+        thailandOnline: {
+          name: "泰國網購",
+          rate: 1,
+          unit: "%",
+          limit: null,
+          countries: ["泰國"]
+        }
+      },
+      
+      notes: [
+        "核卡時選擇J Cash或LINE POINTS",
+        "選LINE POINTS需綁定LINE Pay",
+        "日韓泰實體店需登錄且限量",
+        "日本交通卡單筆需滿NT$2,000"
+      ]
+    },
+    
+    // ========================================
+    // 星展 eco永續卡
+    // ========================================
+    {
+      id: "dbs-eco",
+      name: "星展 eco永續卡",
+      bank: "星展銀行",
+      cardType: "永續環保卡",
+      rewardType: "現金回饋",
+      rewardValue: 1,
+      
+      period: "2025/7/1-2025/12/31",
+      
+      baseRewards: {
+        general: {
+          name: "國內外一般消費",
+          rate: 1.2,
+          unit: "%",
+          limit: null
+        }
+      },
+      
+      specialRewards: {
+        sustainability: {
+          name: "永續品牌",
+          rate: 10,
+          unit: "%",
+          limit: 3409,
+          limitType: "monthly",
+          condition: "Tesla需綁APP，Gogoro含PBGN",
+          merchants: [
+            "Tesla充電", "Gogoro電池", "鮮乳坊", "茶籽堂",
+            "鄰家鮮生", "直接跟農夫買", "玩轉學校", "甘樂文創",
+            "禾乃川", "馳綠", "艾瑪絲", "覺亞", "綠藤", "藍鵲茶"
+          ],
+          exclusions: ["分期", "轉帳匯款", "電子票證", "第三方支付"]
+        },
+        foreignGeneral: {
+          name: "海外實體店（一般卡友）",
+          rate: 5,
+          unit: "%",
+          limit: 21053,
+          limitType: "monthly",
+          condition: "實體卡或行動支付面對面交易",
+          countries: ["日本", "韓國", "泰國", "新加坡", "歐美等60+國"]
+        },
+        foreignPremium: {
+          name: "海外實體店（精選卡友）",
+          rate: 6.8,
+          unit: "%",
+          limit1: 21053,
+          limit2: 50000,
+          limitType: "monthly",
+          breakdown: "3.8%(上限21,053) + 1.8%(上限50,000)"
+        },
+        foreignVIP: {
+          name: "海外實體店（豐盛客戶）",
+          rate: 9.8,
+          unit: "%",
+          limit1: 21053,
+          limit2: 37500,
+          limitType: "monthly",
+          breakdown: "3.8%(上限21,053) + 4.8%(上限37,500)"
+        }
+      },
+      
+      notes: [
+        "基礎回饋1.2%",
+        "Tesla需綁APP繳費",
+        "Gogoro含PBGN車主",
+        "海外分三等級：一般5%、精選6.8%、豐盛9.8%"
+      ]
+    },
+    
+    // ========================================
+    // 玉山 UBear 卡
+    // ========================================
+    {
+      id: "esun-ubear",
+      name: "玉山 UBear 卡",
+      bank: "玉山銀行",
+      cardType: "熊大卡",
+      rewardType: "現金回饋",
+      rewardValue: 1,
+      
+      period: "2025/9/1-2026/2/28",
+      
+      baseRewards: {
+        domestic: {
+          name: "國內一般消費",
+          rate: 1,
+          unit: "%",
+          limit: null
+        }
+      },
+      
+      specialRewards: {
+        streaming: {
+          name: "指定串流平台",
+          rate: 10,
+          unit: "%",
+          limit: 1000,
+          limitType: "monthly",
+          condition: "限原平台付款，經Google/PayPal代扣不適用",
+          merchants: ["Disney+", "Nintendo", "PlayStation", "Netflix"],
+          note: "不與一般/網路消費併計"
+        },
+        online: {
+          name: "網路消費",
+          rate: 3,
+          unit: "%",
+          limit: 7500,
+          limitType: "monthly",
+          condition: "依刷卡授權時交易型態為網路消費",
+          merchants: [
+            "LINE Pay", "街口支付", "悠遊付", "全支付",
+            "PChome", "momo", "蝦皮", "Coupang", "Yahoo",
+            "淘寶", "博客來", "Uber Eats", "foodpanda",
+            "Uber", "高鐵", "Agoda", "Klook", "KKday",
+            "中華航空", "長榮航空", "KKBOX", "iTunes",
+            "Google Play", "Apple官網"
+          ]
+        }
+      },
+      
+      notes: [
+        "串流10%限原平台付款",
+        "串流上限NT$1,000/月",
+        "網購3%上限NT$7,500/月",
+        "不與一般消費併計"
       ]
     }
   ]

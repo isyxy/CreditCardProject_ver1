@@ -132,8 +132,7 @@ export default function CameraScanner({ navigation }: any) {
           <CameraView
             ref={cameraRef}
             style={StyleSheet.absoluteFill}
-            type="back"
-            ratio="16:9"
+            facing="back"
             onCameraReady={() => setIsCameraReady(true)}
           />
 

@@ -1,5 +1,5 @@
 // src/components/CardManagementScreen.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,13 +9,14 @@ import {
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
+  Alert,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useCards } from '../context/CardContext';
 import { getCashbackSummary } from '../utils/cashbackCalculator';
 import BottomNav from './BottomNav';
 
-export default function CardManagementScreen({ navigation }: any) {
+export default function CardManagementScreen({ navigation, route }: any) {
   const { cards, toggleCard } = useCards();
   const [searchText, setSearchText] = useState('');
 
@@ -31,6 +32,53 @@ export default function CardManagementScreen({ navigation }: any) {
   const handleToggleCard = (cardId: string) => {
     toggleCard(cardId);
   };
+
+  const handleScanCard = () => {
+    navigation.navigate('CameraScanner');
+  };
+
+  // 處理從相機掃描返回的結果
+  useEffect(() => {
+    if (route.params?.detection) {
+      const { label, score } = route.params.detection;
+
+      // 嘗試根據識別結果找到對應的卡片
+      const matchedCard = cards.find(
+        (card) =>
+          card.cardName.toLowerCase().includes(label.toLowerCase()) ||
+          label.toLowerCase().includes(card.cardName.toLowerCase()) ||
+          card.bankName.toLowerCase().includes(label.toLowerCase())
+      );
+
+      if (matchedCard) {
+        // 如果找到匹配的卡片，自動啟用
+        if (!matchedCard.isActive) {
+          toggleCard(matchedCard.id);
+          Alert.alert(
+            '✅ 識別成功',
+            `已自動啟用「${matchedCard.cardName}」\n信心值：${(score * 100).toFixed(1)}%`,
+            [{ text: '確定' }]
+          );
+        } else {
+          Alert.alert(
+            '✅ 識別成功',
+            `「${matchedCard.cardName}」已經啟用\n信心值：${(score * 100).toFixed(1)}%`,
+            [{ text: '確定' }]
+          );
+        }
+      } else {
+        // 如果沒有找到匹配的卡片
+        Alert.alert(
+          '⚠️ 卡片未支援',
+          `識別到：${label}\n信心值：${(score * 100).toFixed(1)}%\n\n此卡片尚未加入系統，請手動管理或聯繫開發者新增。`,
+          [{ text: '確定' }]
+        );
+      }
+
+      // 清除 route params 避免重複觸發
+      navigation.setParams({ detection: undefined });
+    }
+  }, [route.params?.detection]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F8FA' }}>
@@ -56,6 +104,9 @@ export default function CardManagementScreen({ navigation }: any) {
               </TouchableOpacity>
             ) : null}
           </View>
+          <TouchableOpacity style={styles.scanButton} onPress={handleScanCard}>
+            <Feather name="camera" size={22} color="#fff" />
+          </TouchableOpacity>
         </View>
 
         <ScrollView style={styles.list} contentContainerStyle={{ paddingBottom: 80 }}>
@@ -113,8 +164,16 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 24, fontWeight: 'bold', color: '#222', marginBottom: 4 },
   subtitle: { fontSize: 14, color: '#888' },
-  searchBarRow: { marginBottom: 16, marginTop: 16, paddingHorizontal: 16 },
+  searchBarRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    marginTop: 16,
+    paddingHorizontal: 16,
+    gap: 12,
+  },
   searchBar: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fff',
@@ -127,6 +186,18 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   searchInput: { flex: 1, fontSize: 16, color: '#222', backgroundColor: 'transparent', marginLeft: 8 },
+  scanButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#4F8EF7',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
   bankTagScroll: { maxHeight: 50, marginBottom: 12 },
   bankTag: {
     flexDirection: 'row',

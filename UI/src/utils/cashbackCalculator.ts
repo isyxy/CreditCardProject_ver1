@@ -84,6 +84,8 @@ export function rankCardsByCategory(
   matchedCategory: string;
   matchType: 'exact' | 'mapped' | 'general' | 'none';
   isRecommended: boolean;
+  categoryNote?: string;      // 該類別的權益提醒
+  categoryLimit?: number;      // 該類別的消費上限
 }> {
   const activeCards = cards.filter((card) => card.isActive);
 
@@ -94,12 +96,19 @@ export function rankCardsByCategory(
   // 計算每張卡的回饋率
   const cardsWithScore = activeCards.map((card) => {
     const result = calculateBestCashbackRate(card, merchantCategory);
+
+    // 取得對應類別的權益提醒和消費上限
+    const categoryNote = card.notes?.[result.matchedCategory];
+    const categoryLimit = card.limits?.[result.matchedCategory];
+
     return {
       ...card,
       cashbackRate: result.rate,
       matchedCategory: result.matchedCategory,
       matchType: result.matchType,
       isRecommended: false,
+      categoryNote,
+      categoryLimit,
     };
   });
 

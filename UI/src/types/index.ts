@@ -35,6 +35,14 @@ export interface CreditCard {
     [category: string]: number;
   };
   isActive: boolean;
+  // 權益提醒和消費上限
+  notes?: {
+    [category: string]: string;
+  };
+  limits?: {
+    [category: string]: number;
+  };
+  generalNotes?: string[];
 }
 
 // 使用者位置介面

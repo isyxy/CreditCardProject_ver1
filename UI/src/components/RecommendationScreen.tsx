@@ -167,6 +167,36 @@ export default function RecommendationScreen({ route, navigation }: any) {
                     </View>
                   </View>
 
+                  {/* 權益提醒 */}
+                  {card.categoryNote && (
+                    <View style={styles.noteBox}>
+                      <Feather name="alert-circle" size={14} color="#FF9500" />
+                      <Text style={styles.noteText}>{card.categoryNote}</Text>
+                    </View>
+                  )}
+
+                  {/* 消費上限警告 */}
+                  {card.categoryLimit && (
+                    <View style={styles.limitBox}>
+                      <Feather name="info" size={14} color="#4F8EF7" />
+                      <Text style={styles.limitText}>
+                        消費上限：每月 {card.categoryLimit} 點
+                      </Text>
+                    </View>
+                  )}
+
+                  {/* 一般性提醒 */}
+                  {card.generalNotes && card.generalNotes.length > 0 && (
+                    <View style={styles.generalNotesBox}>
+                      {card.generalNotes.map((note: string, idx: number) => (
+                        <View key={idx} style={styles.generalNoteRow}>
+                          <Text style={styles.bulletPoint}>•</Text>
+                          <Text style={styles.generalNoteText}>{note}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+
                   {card.cashbackRate === 0 && (
                     <View style={styles.noRewardNote}>
                       <Feather name="info" size={14} color="#888" />
@@ -398,6 +428,63 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#4F8EF7',
     fontWeight: 'bold',
+  },
+  noteBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    padding: 10,
+    backgroundColor: '#FFF9E6',
+    borderRadius: 6,
+    borderLeftWidth: 3,
+    borderLeftColor: '#FF9500',
+  },
+  noteText: {
+    fontSize: 12,
+    color: '#856404',
+    marginLeft: 8,
+    flex: 1,
+    lineHeight: 18,
+  },
+  limitBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    padding: 10,
+    backgroundColor: '#E8F4FF',
+    borderRadius: 6,
+    borderLeftWidth: 3,
+    borderLeftColor: '#4F8EF7',
+  },
+  limitText: {
+    fontSize: 12,
+    color: '#004085',
+    marginLeft: 8,
+    fontWeight: '600',
+  },
+  generalNotesBox: {
+    marginTop: 8,
+    padding: 10,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  generalNoteRow: {
+    flexDirection: 'row',
+    marginBottom: 4,
+  },
+  bulletPoint: {
+    fontSize: 12,
+    color: '#666',
+    marginRight: 6,
+    lineHeight: 18,
+  },
+  generalNoteText: {
+    fontSize: 11,
+    color: '#666',
+    flex: 1,
+    lineHeight: 18,
   },
   noRewardNote: {
     flexDirection: 'row',

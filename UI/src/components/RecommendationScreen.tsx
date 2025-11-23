@@ -8,6 +8,7 @@ import {
   Image,
   TouchableOpacity,
   SafeAreaView,
+  TextInput,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useCards } from '../context/CardContext';
@@ -24,6 +25,7 @@ export default function RecommendationScreen({ route, navigation }: any) {
   const { cards } = useCards();
   const [recommendedCards, setRecommendedCards] = useState<any[]>([]);
   const [amount, setAmount] = useState(1000);
+  const [amountInput, setAmountInput] = useState('1000');
 
   useEffect(() => {
     if (merchant) {
@@ -102,23 +104,22 @@ export default function RecommendationScreen({ route, navigation }: any) {
           {/* 消費金額試算 */}
           <View style={styles.calculatorCard}>
             <Text style={styles.sectionTitle}>預估回饋試算</Text>
-            <View style={styles.amountSelector}>
-              {[500, 1000, 2000, 5000].map((value) => (
-                <TouchableOpacity
-                  key={value}
-                  style={[styles.amountBtn, amount === value && styles.amountBtnActive]}
-                  onPress={() => setAmount(value)}
-                >
-                  <Text
-                    style={[
-                      styles.amountBtnText,
-                      amount === value && styles.amountBtnTextActive,
-                    ]}
-                  >
-                    ${value}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+            <View style={styles.amountInputContainer}>
+              <Text style={styles.currencySymbol}>NT$</Text>
+              <TextInput
+                style={styles.amountInput}
+                value={amountInput}
+                onChangeText={(text) => {
+                  // 只允許數字
+                  const numericText = text.replace(/[^0-9]/g, '');
+                  setAmountInput(numericText);
+                  const numValue = parseInt(numericText) || 0;
+                  setAmount(numValue);
+                }}
+                keyboardType="numeric"
+                placeholder="輸入金額"
+                placeholderTextColor="#999"
+              />
             </View>
           </View>
 
@@ -300,28 +301,28 @@ const styles = StyleSheet.create({
     color: '#222',
     marginBottom: 12,
   },
-  amountSelector: {
+  amountInputContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  amountBtn: {
-    flex: 1,
-    paddingVertical: 8,
-    marginHorizontal: 4,
-    borderRadius: 8,
-    backgroundColor: '#F3F4F6',
     alignItems: 'center',
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#E5E7EB',
+    paddingHorizontal: 16,
+    paddingVertical: 4,
   },
-  amountBtnActive: {
-    backgroundColor: '#4F8EF7',
-  },
-  amountBtnText: {
-    fontSize: 14,
+  currencySymbol: {
+    fontSize: 18,
     fontWeight: '600',
-    color: '#666',
+    color: '#4F8EF7',
+    marginRight: 8,
   },
-  amountBtnTextActive: {
-    color: '#fff',
+  amountInput: {
+    flex: 1,
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#222',
+    paddingVertical: 12,
   },
   listTitle: {
     fontSize: 16,

@@ -247,44 +247,7 @@ export default function HomeScreen({ navigation }: any) {
               </Text>
             </View>
           )}
-
-          {/* 快速篩選 */}
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.filterScroll}
-            contentContainerStyle={{ paddingVertical: 8 }}
-          >
-            <TouchableOpacity style={styles.filterChip}>
-              <Text style={styles.filterText}>全部</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.filterChip}>
-              <Text style={styles.filterText}>咖啡廳</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.filterChip}>
-              <Text style={styles.filterText}>餐廳</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.filterChip}>
-              <Text style={styles.filterText}>超商</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.filterChip}>
-              <Text style={styles.filterText}>購物</Text>
-            </TouchableOpacity>
-          </ScrollView>
         </View>
-
-        {/* 已啟用卡片提示 */}
-        {cards.filter((c) => c.isActive).length > 0 && (
-          <View style={styles.cardInfoBanner}>
-            <Feather name="credit-card" size={16} color="#007AFF" />
-            <Text style={styles.cardInfoText}>
-              已啟用 {cards.filter((c) => c.isActive).length} 張信用卡
-            </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('CardManagement')}>
-              <Text style={styles.cardInfoLink}>管理</Text>
-            </TouchableOpacity>
-          </View>
-        )}
 
         {/* 商家列表 */}
         <ScrollView style={styles.list} contentContainerStyle={{ paddingBottom: 80 }}>
@@ -398,38 +361,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#10B981',
     fontWeight: '500',
-  },
-  filterScroll: {
-    marginTop: 8,
-  },
-  filterChip: {
-    backgroundColor: '#F3F4F6',
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    marginRight: 8,
-  },
-  filterText: {
-    fontSize: 14,
-    color: '#666',
-  },
-  cardInfoBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#E8F4FF',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 8,
-  },
-  cardInfoText: {
-    flex: 1,
-    fontSize: 14,
-    color: '#007AFF',
-  },
-  cardInfoLink: {
-    fontSize: 14,
-    color: '#007AFF',
-    fontWeight: '600',
   },
   list: {
     flex: 1,

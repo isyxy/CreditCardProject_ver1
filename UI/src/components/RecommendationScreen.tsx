@@ -12,12 +12,18 @@ import {
 import { Feather } from '@expo/vector-icons';
 import { useCards } from '../context/CardContext';
 import { Merchant } from '../types';
+import {
+  rankCardsByCategory,
+  calculateCashbackAmount,
+  formatCashbackRate,
+} from '../utils/cashbackCalculator';
 import BottomNav from './BottomNav';
 
 export default function RecommendationScreen({ route, navigation }: any) {
   const { merchant } = route.params || {};
   const { cards } = useCards();
   const [recommendedCards, setRecommendedCards] = useState<any[]>([]);
+  const [amount, setAmount] = useState(1000);
 
   useEffect(() => {
     if (merchant) {
@@ -26,69 +32,20 @@ export default function RecommendationScreen({ route, navigation }: any) {
   }, [merchant, cards]);
 
   const calculateRecommendations = () => {
-    const activeCards = cards.filter((card) => card.isActive);
-
-    if (activeCards.length === 0) {
+    if (!merchant) {
       setRecommendedCards([]);
       return;
     }
 
-    // 根據商家類別計算每張卡的回饋
-    const cardsWithScore = activeCards.map((card) => {
-      let bestRate = 0;
-      let matchedCategory = '一般消費';
-
-      // 檢查各個回饋類別
-      Object.entries(card.cashback).forEach(([category, rate]) => {
-        // 完全匹配
-        if (category === merchant.category) {
-          if (rate > bestRate) {
-            bestRate = rate;
-            matchedCategory = category;
-          }
-        }
-        // 模糊匹配
-        else if (
-          (merchant.category.includes('咖啡') && category.includes('餐廳')) ||
-          (merchant.category.includes('餐廳') && category.includes('餐廳')) ||
-          (merchant.category.includes('超商') && category.includes('超商'))
-        ) {
-          if (rate > bestRate) {
-            bestRate = rate;
-            matchedCategory = category;
-          }
-        }
-        // 全通路兜底
-        else if (category === '全通路' && bestRate === 0) {
-          bestRate = rate;
-          matchedCategory = category;
-        }
-      });
-
-      return {
-        ...card,
-        cashbackRate: bestRate,
-        matchedCategory,
-      };
-    });
-
-    // 排序並設定推薦標記
-    const sorted = cardsWithScore
-      .sort((a, b) => b.cashbackRate - a.cashbackRate)
-      .map((card, index) => ({
-        ...card,
-        isRecommended: index === 0 && card.cashbackRate > 0,
-      }));
-
-    setRecommendedCards(sorted);
+    // 使用新的回饋計算函數
+    const ranked = rankCardsByCategory(cards, merchant.category);
+    setRecommendedCards(ranked);
   };
 
   // 計算消費回饋金額
   const calculateCashback = (amount: number, rate: number) => {
-    return Math.floor(amount * (rate / 100));
+    return calculateCashbackAmount(amount, rate);
   };
-
-  const [amount, setAmount] = useState(1000);
 
   if (!merchant) {
     return (

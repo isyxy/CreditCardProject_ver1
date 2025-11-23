@@ -15,17 +15,16 @@ import { Feather } from '@expo/vector-icons';
 import { useCards } from '../context/CardContext';
 import { availableCreditCards, type AvailableCreditCard } from '../data/creditCards';
 import { CreditCard } from '../types';
+import { getCashbackSummary } from '../utils/cashbackCalculator';
 import BottomNav from './BottomNav';
 
+// 只保留目前 5 張卡片對應的銀行
 const bankTags = [
   { key: '全部', label: '全部' },
   { key: '中國信託', label: '中國信託', icon: require('../../assets/banks/中信LOGO.png') },
-  { key: '國泰世華', label: '國泰世華', icon: require('../../assets/banks/國泰LOGO.png') },
   { key: '台新銀行', label: '台新銀行', icon: require('../../assets/banks/台新LOGO.png') },
   { key: '玉山銀行', label: '玉山銀行', icon: require('../../assets/banks/玉山LOGO.png') },
-  { key: '聯邦銀行', label: '聯邦銀行', icon: require('../../assets/banks/聯邦LOGO.png') },
-  { key: '永豐銀行', label: '永豐銀行', icon: require('../../assets/banks/永豐LOGO.png') },
-  { key: '匯豐銀行', label: '匯豐銀行', icon: require('../../assets/banks/匯豐LOGO.png') },
+  { key: '國泰世華', label: '國泰世華', icon: require('../../assets/banks/國泰LOGO.png') },
 ];
 
 export default function CardManagementScreen({ navigation }: any) {
@@ -73,19 +72,6 @@ export default function CardManagementScreen({ navigation }: any) {
 
   const handleToggleCard = (cardId: string) => {
     toggleCard(cardId);
-  };
-
-  const getCashbackSummary = (cashback: { [key: string]: number }) => {
-    const entries = Object.entries(cashback);
-    if (entries.length === 0) return '無回饋資訊';
-    
-    const topThree = entries
-      .sort(([, a], [, b]) => (b as number) - (a as number))
-      .slice(0, 3)
-      .map(([category, rate]) => `${category} ${rate}%`)
-      .join('、');
-    
-    return topThree;
   };
 
   return (
